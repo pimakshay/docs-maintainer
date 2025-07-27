@@ -76,7 +76,7 @@ class VanillaRAGPipeline:
         
         documents = self.load_documents()
         # text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-        text_splitter = MarkdownTextSplitter(chunk_size=500, chunk_overlap=0)
+        text_splitter = MarkdownTextSplitter(chunk_size=1000, chunk_overlap=0)
         split_docs = text_splitter.split_documents(documents)
 
         filtered_docs = [doc for doc in split_docs if len(doc.page_content.strip()) >= 100]

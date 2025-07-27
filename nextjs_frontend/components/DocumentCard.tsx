@@ -2,6 +2,7 @@
 
 import React from 'react';
 import ReactDiffViewer from 'react-diff-viewer';
+import ReactMarkdown from 'react-markdown';
 import { DocumentUpdate } from '../types';
 
 interface DocumentCardProps {
@@ -35,6 +36,15 @@ const getChangeTypeIcon = (changeType: string) => {
     default:
       return '📄';
   }
+};
+
+// Custom renderer for markdown content in diff viewer
+const renderMarkdown = (content: string) => {
+  return (
+    <div className="prose prose-sm max-w-none">
+      <ReactMarkdown>{content}</ReactMarkdown>
+    </div>
+  );
 };
 
 export default function DocumentCard({ document, onApprove, onReject, onEdit }: DocumentCardProps) {
@@ -84,37 +94,47 @@ export default function DocumentCard({ document, onApprove, onReject, onEdit }: 
 
       {/* Diff Viewer */}
       <div className="border border-gray-200 rounded-md overflow-hidden">
-        <ReactDiffViewer
-          oldValue={model_output.original}
-          newValue={model_output.suggested}
-          splitView={true}
-          useDarkTheme={false}
-          styles={{
-            diffContainer: {
-              preStyles: {
-                backgroundColor: '#f8f9fa',
-                color: '#333',
-                fontSize: '13px',
-                lineHeight: '1.4',
+        <div className="max-h-96 overflow-auto">
+          <ReactDiffViewer
+            oldValue={model_output.original}
+            newValue={model_output.suggested}
+            splitView={true}
+            useDarkTheme={false}
+            renderContent={renderMarkdown}
+            styles={{
+              diffContainer: {
+                preStyles: {
+                  backgroundColor: '#f8f9fa',
+                  color: '#333',
+                  fontSize: '13px',
+                  lineHeight: '1.4',
+                  margin: '0',
+                  padding: '8px',
+                },
               },
-            },
-            line: {
-              padding: '4px 8px',
-            },
-            lineNumber: {
-              color: '#999',
-              backgroundColor: '#f1f3f4',
-            },
-            diffRemoved: {
-              backgroundColor: '#ffeef0',
-              color: '#24292e',
-            },
-            diffAdded: {
-              backgroundColor: '#e6ffed',
-              color: '#24292e',
-            },
-          }}
-        />
+              line: {
+                padding: '4px 8px',
+              },
+              lineNumber: {
+                color: '#999',
+                backgroundColor: '#f1f3f4',
+                minWidth: '40px',
+                padding: '4px 8px',
+              },
+              diffRemoved: {
+                backgroundColor: '#ffeef0',
+                color: '#c53030',
+              },
+              diffAdded: {
+                backgroundColor: '#e6ffed',
+                color: '#22543d',
+              },
+              splitView: {
+                width: '100%',
+              },
+            }}
+          />
+        </div>
       </div>
     </div>
   );

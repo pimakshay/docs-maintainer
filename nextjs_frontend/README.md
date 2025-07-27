@@ -5,7 +5,8 @@ A React frontend built with Next.js 14+ for reviewing and managing documentation
 ## Features
 
 - **Natural Language Query**: Type queries in plain English to find relevant documents
-- **Side-by-Side Diff View**: Compare original and suggested content with visual diff highlighting
+- **Side-by-Side Diff View**: Compare original and suggested content with visual diff highlighting and markdown rendering
+- **Scrollable Content**: Both horizontal and vertical scrolling for long content
 - **Change Type Indicators**: Color-coded badges showing modification type (modified, removed, unchanged)
 - **Action Buttons**: Approve, reject, or edit suggestions (edit functionality placeholder)
 - **Responsive Design**: Works well on desktop with clean, modern UI using Tailwind CSS
@@ -85,6 +86,8 @@ nextjs_frontend/
 - **TypeScript** - Type safety and better developer experience
 - **Tailwind CSS** - Utility-first CSS framework for styling
 - **React Diff Viewer** - Side-by-side diff visualization
+- **React Markdown** - Markdown rendering for documentation content
+- **Tailwind Typography** - Enhanced typography for markdown content
 - **React 18** - Latest React features and hooks
 
 ## Development Notes
