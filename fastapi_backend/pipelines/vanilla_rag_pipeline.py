@@ -6,7 +6,7 @@ from langchain.vectorstores import Chroma
 from langchain.text_splitter import CharacterTextSplitter, MarkdownTextSplitter
 from langchain.chains import RetrievalQA
 
-from llm_manager import LLMManager
+from helpers.llm_manager import LLMManager
 import os
 import json
 
