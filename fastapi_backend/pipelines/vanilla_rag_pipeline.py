@@ -3,8 +3,9 @@ import warnings
 from langchain.schema import Document
 
 from langchain.vectorstores import Chroma
-from langchain.text_splitter import CharacterTextSplitter, MarkdownTextSplitter
+from langchain.text_splitter import CharacterTextSplitter, MarkdownTextSplitter, RecursiveCharacterTextSplitter
 from langchain.chains import RetrievalQA
+from langchain.text_splitter import Language
 
 from helpers.llm_manager import LLMManager
 import os
@@ -76,7 +77,12 @@ class VanillaRAGPipeline:
         
         documents = self.load_documents()
         # text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-        text_splitter = MarkdownTextSplitter(chunk_size=1000, chunk_overlap=0)
+        # text_splitter = MarkdownTextSplitter(chunk_size=1000, chunk_overlap=0)
+        text_splitter = RecursiveCharacterTextSplitter.from_language(chunk_size=1000, 
+                                                        chunk_overlap=0, 
+                                                        language=Language.MARKDOWN, 
+                                                        # separators=["```", "md-code__content", "\n\n", "\n", " ", ""]
+                                                        )
         split_docs = text_splitter.split_documents(documents)
 
         filtered_docs = [doc for doc in split_docs if len(doc.page_content.strip()) >= 100]
@@ -88,7 +94,7 @@ class VanillaRAGPipeline:
             filtered_docs, 
             self.embedding_model, 
             collection_name=collection_name,
-            persist_directory="chroma"  # Directory to persist the vector store
+            persist_directory="chroma_recursive_markdown"  # Directory to persist the vector store
         )
         return self.docSearch
     

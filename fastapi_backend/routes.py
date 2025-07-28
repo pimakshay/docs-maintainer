@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 from langchain.schema import Document
 from numpy import diff
+import uvicorn
 
 from config import settings
 from helpers.prompts.diff_suggestion_prompt import system_prompt
@@ -54,7 +55,7 @@ def suggest_changes(query: str, docs: List[Document]):
     for doc in docs:
         score = doc[1]
         doc = doc[0]
-        if score < 0.4:
+        if score > 0.4:
             continue
 
         user_prompt = diff_suggestion_prompt.create_user_prompt(query, doc.page_content, doc.metadata["title"])
@@ -80,10 +81,12 @@ def suggest_changes(query: str, docs: List[Document]):
 
 @app.post("/retrieve_relevant_documents")
 def retrieve_relevant_documents(query: str):
-    found_docs = rag_pipeline.docSearch.similarity_search_with_score(query,k=3)
+    found_docs = rag_pipeline.docSearch.similarity_search_with_score(query,k=5)
 
     suggested_changes = suggest_changes(query, found_docs)
 
 
     return suggested_changes
 
+if __name__ == "__main__":
+    uvicorn.run("routes:app", port=5000, log_level="info", reload=True)

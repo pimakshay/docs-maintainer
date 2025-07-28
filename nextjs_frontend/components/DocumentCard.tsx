@@ -41,7 +41,7 @@ const getChangeTypeIcon = (changeType: string) => {
 // Custom renderer for markdown content in diff viewer
 const renderMarkdown = (content: string) => {
   return (
-    <div className="prose prose-sm max-w-none">
+    <div className="text-sm text-gray-800 leading-relaxed">
       <ReactMarkdown>{content}</ReactMarkdown>
     </div>
   );
@@ -59,8 +59,16 @@ export default function DocumentCard({ document, onApprove, onReject, onEdit }: 
             {document_metadata.title}
           </h3>
           <p className="text-sm text-gray-600 mb-2">
-            Source: {document_metadata.source_url}
-          </p>
+          Source:{" "}
+          <a
+            href={document_metadata.source_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 underline hover:text-blue-800"
+          >
+            {document_metadata.source_url}
+          </a>
+        </p>
           <div className="flex items-center gap-2">
             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getChangeTypeColor(model_output.change_type)}`}>
               <span className="mr-1">{getChangeTypeIcon(model_output.change_type)}</span>
