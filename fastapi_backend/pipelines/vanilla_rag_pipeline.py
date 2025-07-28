@@ -13,7 +13,14 @@ import json
 
 
 class VanillaRAGPipeline:
-    def __init__(self, llm_manager:LLMManager=None, doc_dir_path:str=None):
+    def __init__(self, 
+                llm_manager:LLMManager=None, 
+                doc_dir_path:str=None,
+                chroma_persist_dir: str="chroma_recursive_markdown",
+                top_k_docs: int = 5,
+                chunk_size: int = 1000,
+                chunk_overlap: int = 0,
+                ):
         warnings.filterwarnings("ignore")
         # get all filenames inside doc_dir_paths
         self.file_paths = []
@@ -28,6 +35,13 @@ class VanillaRAGPipeline:
         self.llm_model = llm_manager.llm_model if llm_manager else None
         self.embedding_model = llm_manager.embeddings if llm_manager else None
         self.qa = None
+
+        # retrieval parameters
+        self.top_k_docs = top_k_docs
+        self.chunk_size = chunk_size
+        self.chunk_overlap = chunk_overlap
+        self.chroma_db_dir = chroma_persist_dir
+
 
     def load_documents(self):
         documents = []
@@ -75,28 +89,49 @@ class VanillaRAGPipeline:
         if self.embedding_model is None:
             raise ValueError("Embedding model is not set")
         
-        documents = self.load_documents()
-        # text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-        # text_splitter = MarkdownTextSplitter(chunk_size=1000, chunk_overlap=0)
-        text_splitter = RecursiveCharacterTextSplitter.from_language(chunk_size=1000, 
-                                                        chunk_overlap=0, 
-                                                        language=Language.MARKDOWN, 
-                                                        # separators=["```", "md-code__content", "\n\n", "\n", " ", ""]
-                                                        )
-        split_docs = text_splitter.split_documents(documents)
+        if not os.path.exists(self.chroma_db_dir):
+            os.makedirs(self.chroma_db_dir)
 
-        filtered_docs = [doc for doc in split_docs if len(doc.page_content.strip()) >= 100]
+        persist_dir = self.chroma_db_dir
 
-        print(f"Total split docs before filtering: {len(split_docs)}")
-        print(f"Total split docs after filtering: {len(filtered_docs)}")
-        
-        self.docSearch = Chroma.from_documents(
-            filtered_docs, 
-            self.embedding_model, 
-            collection_name=collection_name,
-            persist_directory="chroma_recursive_markdown"  # Directory to persist the vector store
-        )
+        chroma_db_path = os.path.join(persist_dir, "chroma.sqlite3")
+
+        print("Chroma DB path:", chroma_db_path)
+        print("Collection name:", collection_name)
+        print("Persist directory:", persist_dir)
+
+        # Check if the DB already exists
+        if os.path.exists(chroma_db_path):
+            print("Loading existing Chroma DB...")
+            self.docSearch = Chroma(
+                collection_name=collection_name,
+                embedding_function=self.embedding_model,
+                persist_directory=persist_dir
+            )
+        else:
+            print("Creating new Chroma DB...")
+            documents = self.load_documents()
+            text_splitter = RecursiveCharacterTextSplitter.from_language(
+                chunk_size=1000,
+                chunk_overlap=0,
+                language=Language.MARKDOWN,
+            )
+            split_docs = text_splitter.split_documents(documents)
+
+            filtered_docs = [doc for doc in split_docs if len(doc.page_content.strip()) >= 100]
+
+            print(f"Total split docs before filtering: {len(split_docs)}")
+            print(f"Total split docs after filtering: {len(filtered_docs)}")
+            
+            self.docSearch = Chroma.from_documents(
+                filtered_docs, 
+                self.embedding_model, 
+                collection_name=collection_name,
+                persist_directory=persist_dir
+            )
+
         return self.docSearch
+
     
     def setup_qa_chain(self):
         if self.llm_model is None:

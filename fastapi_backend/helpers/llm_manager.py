@@ -2,7 +2,12 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 
 class LLMManager:
-    def __init__(self, api_key, llm_model_name="gemini-2.0-flash-exp", embedding_model_name="nomic-embed-text"):
+    """
+    Manages initialization and interaction with Gemini and embedding models.
+
+    Provides methods to invoke the LLM with prompts and to generate embeddings for text.
+    """
+    def __init__(self, api_key: str, llm_model_name="gemini-2.0-flash-exp", embedding_model_name="nomic-embed-text"):
         
         temperature = 0.0
         verbose = True
@@ -14,7 +19,7 @@ class LLMManager:
                                 verbose=verbose)
 
         self.embeddings = GoogleGenerativeAIEmbeddings(model=embedding_model_name, 
-                                          api_key=api_key)
+                                          google_api_key=api_key)
 
     def invoke(self, prompt: ChatPromptTemplate, **kwargs) -> str:
         if isinstance(prompt, str):

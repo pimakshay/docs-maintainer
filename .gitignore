@@ -208,6 +208,9 @@ __marimo__/
 
 # ignore chroma db files
 chroma/
+*.sqlite3
+*.bin
+*.pickle
 data/
 
 # ignore jupyter notebooks
