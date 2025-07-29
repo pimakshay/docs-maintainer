@@ -68,6 +68,7 @@ def suggest_changes(query: str, docs: List[Document]):
         ])
 
         document_metadata = DocumentMetadata(
+                            original=doc.page_content,
                             chunk_id=doc.metadata["chunk_id"],
                             title=doc.metadata["title"],
                             source_url=doc.metadata["source_url"],

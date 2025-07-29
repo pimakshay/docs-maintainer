@@ -104,7 +104,7 @@ export default function DocumentCard({ document, onApprove, onReject, onEdit }: 
       <div className="border border-gray-200 rounded-md overflow-hidden">
         <div className="max-h-96 overflow-auto">
           <ReactDiffViewer
-            oldValue={model_output.original}
+            oldValue={document_metadata.original}
             newValue={model_output.suggested}
             splitView={true}
             useDarkTheme={false}

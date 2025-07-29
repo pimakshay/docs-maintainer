@@ -1,10 +1,10 @@
 export interface ModelOutput {
   change_type: "modified" | "removed" | "unchanged";
-  original: string;
   suggested: string;
 }
 
 export interface DocumentMetadata {
+  original: string
   chunk_id: string
   title: string;
   source_url: string;
