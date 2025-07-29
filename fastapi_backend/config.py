@@ -6,9 +6,15 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
 
     # GEMINI Model parameters
-    GOOGLE_API_KEY: str
-    GEMINI_MODEL_NAME: str
-    GEMINI_EMBEDDING_MODEL_NAME: str
+    PROVIDER: str
+
+    API_KEY: str
+    LLM_MODEL_NAME: str
+    EMBEDDING_MODEL_NAME: str
+
+    # GOOGLE_API_KEY: str
+    # GEMINI_MODEL_NAME: str
+    # GEMINI_EMBEDDING_MODEL_NAME: str
 
     # Load documentation folder
     DOC_DIR_PATH: str

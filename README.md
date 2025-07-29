@@ -40,12 +40,16 @@ Documentation Maintainer is an AI-powered system for reviewing, updating, and ma
    ```bash
    uv sync
    ```
+3. **Documentation Markdown Files**
+   - place the markdown files inside: `data/documentation/`
 3. **Set up environment variables:**
    - Copy `.env.example` to `.env` in `fastapi_backend/` and fill in required keys.
+   - Input `DOC_DIR_PATH` as `data/documentation` in `.env`
+
 4. **Run the backend:**
    ```bash
    cd fastapi_backend
-   uvicorn routes:app --reload
+   uvicorn routes:app --host 0.0.0.0--reload
    ```
 5. **Run the frontend:**
    ```bash

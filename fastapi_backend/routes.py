@@ -2,7 +2,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 from langchain.schema import Document
-from numpy import diff
 import uvicorn
 
 from fastapi_backend.config import settings
@@ -24,9 +23,10 @@ app.add_middleware(
 )
 
 # define LLM manager
-llm_manager = LLMManager(api_key=settings.GOOGLE_API_KEY,
-                        llm_model_name=settings.GEMINI_MODEL_NAME, 
-                        embedding_model_name=settings.GEMINI_EMBEDDING_MODEL_NAME)
+llm_manager = LLMManager(api_key=settings.API_KEY,
+                        provider=settings.PROVIDER,
+                        llm_model_name=settings.LLM_MODEL_NAME, 
+                        embedding_model_name=settings.EMBEDDING_MODEL_NAME)
 
 # define rag pipeline
 rag_pipeline = VanillaRAGPipeline(llm_manager=llm_manager, 
@@ -56,8 +56,8 @@ def suggest_changes(query: str, docs: List[Document]):
     for doc in docs:
         score = doc[1]
         doc = doc[0]
-        if score > settings.SCORE_THRESHOLD:
-            continue
+        # if score > settings.SCORE_THRESHOLD:
+        #     continue
 
         user_prompt = diff_suggestion_prompt.create_user_prompt(query, doc.page_content, doc.metadata["title"])
         
