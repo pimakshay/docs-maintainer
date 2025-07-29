@@ -1,0 +1,16 @@
+[project]
+name = "docs-maintainer"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "chromadb>=1.0.15",
+    "fastapi[standard]>=0.116.1",
+    "langchain>=0.3.27",
+    "langchain-community>=0.3.27",
+    "langchain-google-genai>=2.1.8",
+    "langchain-openai>=0.3.28",
+    "numpy>=2.3.2",
+    "pydantic-settings>=2.10.1",
+]
