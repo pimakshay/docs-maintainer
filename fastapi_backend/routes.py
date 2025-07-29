@@ -100,9 +100,17 @@ def retrieve_relevant_documents(query: str):
 
     return suggested_changes
 
-@app.post("/approve_changes")
-def approve_changes(doc: Document):
-    pass
+@app.post("/apply_approved_changes")
+def apply_approved_changes(docs: List[DocumentUpdate]):
+    """
+    Receives a list of approved document changes from the frontend
+    and processes them.
+
+    (Currently a placeholder implementation)
+    """
+    # TODO: Implement the logic to apply the changes.
+    return f"Total approved documents: {len(docs)}"
+
 
 # add a liveness check endpoint
 @app.get("/")

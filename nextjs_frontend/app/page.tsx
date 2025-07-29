@@ -1,14 +1,18 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import DocumentCard from '../components/DocumentCard';
 import { DocumentUpdate } from '../types';
+import { useApprovedDocuments } from '../contexts/ApprovedDocumentsContext';
 
 export default function Home() {
   const [query, setQuery] = useState('');
   const [documents, setDocuments] = useState<DocumentUpdate[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+  const { approvedDocuments, addApprovedDocument } = useApprovedDocuments();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,13 +46,16 @@ export default function Home() {
 
   const handleApprove = (document: DocumentUpdate) => {
     console.log('Approved document:', document);
-    // TODO: Implement approval logic
-    alert('Document approved! (Functionality to be implemented)');
+    addApprovedDocument(document);
+    setDocuments(prevDocs =>
+      prevDocs.filter(doc => doc.document_metadata.chunk_id !== document.document_metadata.chunk_id)
+    );
+    alert('Document approved! You can review all approved documents in the Final Review page.');
   };
 
   const handleReject = (document: DocumentUpdate) => {
     console.log('Rejected document:', document);
-    // TODO: Implement rejection logic
+
     setDocuments(prevDocs =>
       prevDocs.filter(doc => doc.document_metadata.chunk_id !== document.document_metadata.chunk_id)
     );
@@ -56,9 +63,14 @@ export default function Home() {
   };
 
   const handleEdit = (document: DocumentUpdate) => {
-    console.log('Edit document:', document);
-    // TODO: Implement edit logic
-    alert('Edit functionality to be implemented');
+    console.log('Edited document:', document);
+    // Update the document in the local state
+    setDocuments(prevDocs =>
+      prevDocs.map(doc => 
+        doc.document_metadata.chunk_id === document.document_metadata.chunk_id ? document : doc
+      )
+    );
+    alert('Document edited successfully!');
   };
 
   return (
@@ -94,6 +106,30 @@ export default function Home() {
             </button>
           </form>
         </div>
+
+        {/* Final Review Button */}
+        {approvedDocuments.length > 0 && (
+          <div className="max-w-2xl mx-auto mb-8">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-green-800 font-medium">
+                    {approvedDocuments.length} document{approvedDocuments.length !== 1 ? 's' : ''} approved
+                  </p>
+                  <p className="text-green-600 text-sm">
+                    Ready for final review
+                  </p>
+                </div>
+                <button
+                  onClick={() => router.push('/final-review')}
+                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                >
+                  Go to Final Review
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Error Message */}
         {error && (
