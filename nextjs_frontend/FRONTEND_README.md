@@ -70,7 +70,7 @@ nextjs_frontend/
 ├── package.json             # Dependencies and scripts
 ├── tailwind.config.js       # Tailwind CSS configuration
 ├── tsconfig.json            # TypeScript configuration
-└── README.md               # This file
+└── FRONTEND_README.md               # This file
 ```
 
 ## Available Scripts
@@ -98,16 +98,6 @@ nextjs_frontend/
 - Loading states provide user feedback during API calls
 - The design is responsive and optimized for desktop use
 
-## Backend Requirements
-
-Ensure your FastAPI backend is running and accessible at `http://localhost:8000` with the following endpoint:
-
-```python
-@app.post("/retrieve_relevant_documents")
-def retrieve_relevant_documents(query: str):
-    # Your implementation here
-    return DocumentUpdate[]
-```
 
 ## Troubleshooting
 

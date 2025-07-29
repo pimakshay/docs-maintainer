@@ -134,6 +134,11 @@ class VanillaRAGPipeline:
 
     
     def setup_qa_chain(self):
+        """
+        User can interact with the documentation and get a summarized response.
+        In the current implementation, we haven't used qa chain. 
+        It can be easily incorporated by using a query classifier which decides if the query is about document retrieval or summarization.
+        """
         if self.llm_model is None:
             raise ValueError("LLM model is not set")
         if self.docSearch is None:
