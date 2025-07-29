@@ -7,7 +7,7 @@ from langchain.text_splitter import CharacterTextSplitter, MarkdownTextSplitter,
 from langchain.chains import RetrievalQA
 from langchain.text_splitter import Language
 
-from helpers.llm_manager import LLMManager
+from fastapi_backend.helpers.llm_manager import LLMManager
 import os
 import json
 

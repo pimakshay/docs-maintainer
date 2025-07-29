@@ -5,12 +5,12 @@ from langchain.schema import Document
 from numpy import diff
 import uvicorn
 
-from config import settings
-from helpers.prompts.diff_suggestion_prompt import system_prompt
-from helpers.llm_manager import LLMManager
-from helpers.prompts import diff_suggestion_prompt
-from pipelines.vanilla_rag_pipeline import VanillaRAGPipeline
-from models import ModelOutput, DocumentMetadata, DocumentUpdate
+from fastapi_backend.config import settings
+from fastapi_backend.helpers.prompts.diff_suggestion_prompt import system_prompt
+from fastapi_backend.helpers.llm_manager import LLMManager
+from fastapi_backend.helpers.prompts import diff_suggestion_prompt
+from fastapi_backend.pipelines.vanilla_rag_pipeline import VanillaRAGPipeline
+from fastapi_backend.models import ModelOutput, DocumentMetadata, DocumentUpdate
 
 
 app = FastAPI()
@@ -98,5 +98,14 @@ def retrieve_relevant_documents(query: str):
 
     return suggested_changes
 
+@app.post("/approve_changes")
+def approve_changes(doc: Document):
+    pass
+
+# add a liveness check endpoint
+@app.get("/")
+async def health_check():
+    return {"status": "healthy"}
+
 if __name__ == "__main__":
-    uvicorn.run("routes:app", port=5000, log_level="info", reload=True)
+    uvicorn.run("routes:app", port=8000, log_level="info", reload=True)

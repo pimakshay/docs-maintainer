@@ -1,4 +1,4 @@
-from typing import Set
+import os
 
 from pydantic_settings import BaseSettings
 
@@ -25,7 +25,8 @@ class Settings(BaseSettings):
     FRONTEND_URL: str = "http://localhost:3000"
 
     class Config:
-        env_file = "/home/akshay/Documents/projects/pluno_tasks/docs-maintainer/fastapi_backend/.env"
+        home_path = os.path.join(os.path.dirname(__file__), "..")
+        env_file = os.path.join(home_path, "fastapi_backend/.env")
         env_file_encoding = "utf-8"
 
 settings = Settings()
