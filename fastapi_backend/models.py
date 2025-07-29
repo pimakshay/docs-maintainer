@@ -6,6 +6,7 @@ class ModelOutput(BaseModel):
     suggested: str = Field(description="Suggested changes to the page content")
 
 class DocumentMetadata(BaseModel):
+    chunk_id: str = Field(description="Unique chunk ID")
     title: str = Field(description="Title of the page")
     source_url: str = Field(description="Source URL of the page")
     file_path: str = Field(description="File path of the page")

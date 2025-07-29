@@ -1,15 +1,15 @@
 import warnings
+import os
+import json
+from uuid import uuid4
 
 from langchain.schema import Document
-
 from langchain.vectorstores import Chroma
 from langchain.text_splitter import CharacterTextSplitter, MarkdownTextSplitter, RecursiveCharacterTextSplitter
 from langchain.chains import RetrievalQA
 from langchain.text_splitter import Language
 
 from fastapi_backend.helpers.llm_manager import LLMManager
-import os
-import json
 
 
 class VanillaRAGPipeline:
@@ -68,7 +68,7 @@ class VanillaRAGPipeline:
                             "title": title,
                             "source_url": source_url,
                             "file_path": file_path,  # helpful for debugging
-                            # "scrape_id": scrape_id
+                            "scrape_id": scrape_id
                         }
                     )
                     documents.append(doc)
@@ -118,7 +118,24 @@ class VanillaRAGPipeline:
             )
             split_docs = text_splitter.split_documents(documents)
 
-            filtered_docs = [doc for doc in split_docs if len(doc.page_content.strip()) >= 100]
+            # filtered_docs = [doc for doc in split_docs if len(doc.page_content.strip()) >= 100]
+            filtered_docs = []
+            for chunk in split_docs:
+                if len(chunk.page_content.strip()) < 100:
+                    continue
+
+                # Create a unique ID for the chunk
+                chunk_id = str(uuid4())
+
+                # Add/Update metadata to include original and chunk IDs
+                new_metadata = dict(chunk.metadata)
+                # new_metadata["scrape_id"] = original_id  # original document id
+                new_metadata["chunk_id"] = chunk_id      # unique chunk id
+
+                # Replace metadata with new metadata
+                chunk.metadata = new_metadata
+
+                filtered_docs.append(chunk)            
 
             print(f"Total split docs before filtering: {len(split_docs)}")
             print(f"Total split docs after filtering: {len(filtered_docs)}")

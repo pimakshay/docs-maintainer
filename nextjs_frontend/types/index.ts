@@ -5,6 +5,7 @@ export interface ModelOutput {
 }
 
 export interface DocumentMetadata {
+  chunk_id: string
   title: string;
   source_url: string;
   file_path: string;

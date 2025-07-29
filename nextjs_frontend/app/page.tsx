@@ -49,7 +49,10 @@ export default function Home() {
   const handleReject = (document: DocumentUpdate) => {
     console.log('Rejected document:', document);
     // TODO: Implement rejection logic
-    alert('Document rejected! (Functionality to be implemented)');
+    setDocuments(prevDocs =>
+      prevDocs.filter(doc => doc.document_metadata.chunk_id !== document.document_metadata.chunk_id)
+    );
+    alert('Document rejected!');
   };
 
   const handleEdit = (document: DocumentUpdate) => {
@@ -128,7 +131,7 @@ export default function Home() {
               key={`${document.document_metadata.title}-${index}`}
               document={document}
               onApprove={handleApprove}
-              onReject={handleReject}
+              onReject={() => handleReject(document)}
               onEdit={handleEdit}
             />
           ))}
