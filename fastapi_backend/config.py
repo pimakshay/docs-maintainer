@@ -26,6 +26,8 @@ class Settings(BaseSettings):
     CHROMA_DB_NAME: str
     SCORE_THRESHOLD: float
 
+    # Retrieval method
+    RETRIEVAL_METHOD: str = "hybrid"
 
     # Frontend
     FRONTEND_URL: str = "http://localhost:3000"

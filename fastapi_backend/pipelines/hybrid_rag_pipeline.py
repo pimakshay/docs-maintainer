@@ -12,6 +12,7 @@ from langchain.text_splitter import Language
 from langchain.retrievers import EnsembleRetriever, BM25Retriever
 from langchain_community.retrievers import bm25
 
+from fastapi_backend.helpers.document_cleaner import DocumentCleaner
 from fastapi_backend.helpers.llm_manager import LLMManager
 from fastapi_backend.helpers.query_transformation import QueryTransformer
 
@@ -25,6 +26,8 @@ class HybridRAGPipeline:
                 top_k_docs: int = 5,
                 chunk_size: int = 1000,
                 chunk_overlap: int = 0,
+                enable_query_preprocessing: bool = True,
+                enable_document_cleaning: bool = True,
                 ):
         warnings.filterwarnings("ignore")
         # get all filenames inside doc_dir_paths
@@ -47,7 +50,10 @@ class HybridRAGPipeline:
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
         self.chroma_db_dir = chroma_persist_dir
-        self.query_preprocessor=QueryTransformer(llm_manager=llm_manager)
+        self.query_preprocessor=QueryTransformer(llm_manager=llm_manager) if enable_query_preprocessing else None
+        self.document_cleaner = DocumentCleaner(llm_manager=llm_manager) if enable_document_cleaning else None
+
+
 
     def preprocess_query(self, query: str) -> Tuple[str, Dict[str, Any]]:
         """
@@ -64,7 +70,11 @@ class HybridRAGPipeline:
 
     def load_documents(self):
         documents = []
-
+        cleaning_stats = {
+            'total_documents': 0,
+            'cleaned_documents': 0,
+            'total_reduction_percentage': 0,
+        }
         for file_path in self.file_paths:
             if file_path.endswith('.json'):
                 with open(file_path, 'r', encoding='utf-8') as f:
@@ -76,6 +86,25 @@ class HybridRAGPipeline:
                     # Load only english language documents
                     if metadata.get("language", "") != "en":
                         continue
+
+                    cleaning_stats['total_documents'] += 1
+
+                    # apply document cleaning
+                    if self.document_cleaner:
+                        cleaned_content, cleaning_info = self.document_cleaner.clean_document(
+                            markdown, 
+                            use_llm=True
+                        )
+                        
+                        if cleaning_info['reduction_percentage'] > 0:
+                            cleaning_stats['cleaned_documents'] += 1
+                            cleaning_stats['total_reduction_percentage'] += cleaning_info['reduction_percentage']
+                        
+                        # Update metadata with cleaning info
+                        metadata['cleaning_info'] = cleaning_info
+                        markdown = cleaned_content
+                    else:
+                        markdown = markdown                        
 
                     title = metadata.get("title", "")
                     source_url = metadata.get("sourceURL", "")

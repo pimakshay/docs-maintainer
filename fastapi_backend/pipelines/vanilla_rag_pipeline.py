@@ -1,7 +1,9 @@
+from calendar import c
 import warnings
 import os
 import json
 from uuid import uuid4
+from typing import List, Dict, Any, Tuple
 
 from langchain.schema import Document
 from langchain.vectorstores import Chroma
@@ -10,6 +12,10 @@ from langchain.chains import RetrievalQA
 from langchain.text_splitter import Language
 
 from fastapi_backend.helpers.llm_manager import LLMManager
+from fastapi_backend.helpers.query_transformation import QueryTransformer
+from fastapi_backend.helpers.document_cleaner import DocumentCleaner
+
+
 
 
 class VanillaRAGPipeline:
@@ -20,6 +26,8 @@ class VanillaRAGPipeline:
                 top_k_docs: int = 5,
                 chunk_size: int = 1000,
                 chunk_overlap: int = 0,
+                enable_query_preprocessing: bool = True,
+                enable_document_cleaning: bool = True,
                 ):
         warnings.filterwarnings("ignore")
         # get all filenames inside doc_dir_paths
@@ -41,10 +49,19 @@ class VanillaRAGPipeline:
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
         self.chroma_db_dir = chroma_persist_dir
+        self.query_preprocessor=QueryTransformer(llm_manager=llm_manager) if enable_query_preprocessing else None
+
+
+    
 
 
     def load_documents(self):
         documents = []
+        cleaning_stats = {
+            'total_documents': 0,
+            'cleaned_documents': 0,
+            'total_reduction_percentage': 0,
+        }
 
         for file_path in self.file_paths:
             if file_path.endswith('.json'):
@@ -58,6 +75,27 @@ class VanillaRAGPipeline:
                     if metadata.get("language", "") != "en":
                         continue
 
+                    cleaning_stats['total_documents'] += 1
+
+                    # apply document cleaning
+                    if self.document_cleaner:
+                        cleaned_content, cleaning_info = self.document_cleaner.clean_document(
+                            markdown, 
+                            use_llm=True
+                        )
+                        
+                        if cleaning_info['reduction_percentage'] > 0:
+                            cleaning_stats['cleaned_documents'] += 1
+                            cleaning_stats['total_reduction_percentage'] += cleaning_info['reduction_percentage']
+                        
+                        # Update metadata with cleaning info
+                        metadata['cleaning_info'] = cleaning_info
+                        markdown = cleaned_content
+                    else:
+                        markdown = markdown                        
+
+
+
                     title = metadata.get("title", "")
                     source_url = metadata.get("sourceURL", "")
                     scrape_id = metadata.get("scrapeId", "")
@@ -69,7 +107,8 @@ class VanillaRAGPipeline:
                             "source_url": source_url,
                             "file_path": file_path,  # helpful for debugging
                             "scrape_id": scrape_id
-                        }
+                        },
+                        id=str(uuid4())
                     )
                     documents.append(doc)
             else:
@@ -148,6 +187,50 @@ class VanillaRAGPipeline:
             )
 
         return self.docSearch
+
+
+
+    def retrieve_documents(self, query: str, use_preprocessing: bool = True) -> Tuple[List[Tuple[Document, float]], Dict[str, Any]]:
+        """
+        Retrieve relevant documents with optional query preprocessing.
+        """
+        retrieval_info = {
+            'original_query': query,
+            'query_transformation_applied': False,
+            'preprocessing_info': {},
+            'retrieval_metrics': {}
+        }
+        
+        # Preprocess query if enabled
+        if use_preprocessing and self.query_preprocessor:
+            improved_query = self.preprocess_query(query)
+            retrieval_info['query_transformation_applied'] = True
+            retrieval_info['improved_query'] = improved_query
+            query = improved_query
+        
+        if self.documents is None:
+            self.load_documents()
+
+        # Perform retrieval
+        if not self.chromadbDocSearch:
+            self.setup_chromadb_vector_store()
+            # NOTE: not called--> self.setup_bm25_vector_store()
+
+        retriever_chromadb = self.chromadbDocSearch.as_retriever(search_kwargs={"k": self.top_k_docs})
+
+
+        found_docs = retriever_chromadb.get_relevant_documents(query=query)
+        
+        # print(found_docs)
+        # Add retrieval metrics
+        retrieval_info['retrieval_metrics'] = {
+            'total_docs_retrieved': len(found_docs),
+            # 'avg_score': sum(score for _, score in found_docs) / len(found_docs) if found_docs else 0,
+            # 'min_score': min(score for _, score in found_docs) if found_docs else 0,
+            # 'max_score': max(score for _, score in found_docs) if found_docs else 0
+        }
+        
+        return found_docs, retrieval_info
 
     
     def setup_qa_chain(self):

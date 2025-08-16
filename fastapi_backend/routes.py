@@ -8,7 +8,7 @@ from fastapi_backend.config import settings
 from fastapi_backend.helpers.prompts.diff_suggestion_prompt import system_prompt
 from fastapi_backend.helpers.llm_manager import LLMManager
 from fastapi_backend.helpers.prompts import diff_suggestion_prompt
-# from fastapi_backend.pipelines.vanilla_rag_pipeline import VanillaRAGPipeline
+from fastapi_backend.pipelines.vanilla_rag_pipeline import VanillaRAGPipeline
 from fastapi_backend.pipelines.hybrid_rag_pipeline import HybridRAGPipeline
 from fastapi_backend.models import ModelOutput, DocumentMetadata, DocumentUpdate
 
@@ -30,13 +30,25 @@ llm_manager = LLMManager(api_key=settings.API_KEY,
                         embedding_model_name=settings.EMBEDDING_MODEL_NAME)
 
 # define rag pipeline
-rag_pipeline = HybridRAGPipeline(llm_manager=llm_manager, 
-                                  doc_dir_path=settings.DOC_DIR_PATH,
-                                  top_k_docs=settings.TOP_K_DOCS,
-                                  chunk_size=settings.CHUNK_SIZE,
-                                  chunk_overlap=settings.CHUNK_OVERLAP,
-                                  chroma_persist_dir=settings.CHROMA_DB_NAME                                
-                                  )
+if settings.RETRIEVAL_METHOD == "hybrid":
+
+    rag_pipeline = HybridRAGPipeline(llm_manager=llm_manager, 
+                                    doc_dir_path=settings.DOC_DIR_PATH,
+                                    top_k_docs=settings.TOP_K_DOCS,
+                                    chunk_size=settings.CHUNK_SIZE,
+                                    chunk_overlap=settings.CHUNK_OVERLAP,
+                                    chroma_persist_dir=settings.CHROMA_DB_NAME                                
+                                    )
+
+elif settings.RETRIEVAL_METHOD == "vanilla":
+
+    rag_pipeline = VanillaRAGPipeline(llm_manager=llm_manager, 
+                                    doc_dir_path=settings.DOC_DIR_PATH,
+                                    top_k_docs=settings.TOP_K_DOCS,
+                                    chunk_size=settings.CHUNK_SIZE,
+                                    chunk_overlap=settings.CHUNK_OVERLAP,
+                                    chroma_persist_dir=settings.CHROMA_DB_NAME                                
+                                    )
 
 
 def suggest_changes(query: str, docs: List[Document]):
