@@ -8,7 +8,8 @@ from fastapi_backend.config import settings
 from fastapi_backend.helpers.prompts.diff_suggestion_prompt import system_prompt
 from fastapi_backend.helpers.llm_manager import LLMManager
 from fastapi_backend.helpers.prompts import diff_suggestion_prompt
-from fastapi_backend.pipelines.vanilla_rag_pipeline import VanillaRAGPipeline
+# from fastapi_backend.pipelines.vanilla_rag_pipeline import VanillaRAGPipeline
+from fastapi_backend.pipelines.hybrid_rag_pipeline import HybridRAGPipeline
 from fastapi_backend.models import ModelOutput, DocumentMetadata, DocumentUpdate
 
 
@@ -29,14 +30,13 @@ llm_manager = LLMManager(api_key=settings.API_KEY,
                         embedding_model_name=settings.EMBEDDING_MODEL_NAME)
 
 # define rag pipeline
-rag_pipeline = VanillaRAGPipeline(llm_manager=llm_manager, 
+rag_pipeline = HybridRAGPipeline(llm_manager=llm_manager, 
                                   doc_dir_path=settings.DOC_DIR_PATH,
                                   top_k_docs=settings.TOP_K_DOCS,
                                   chunk_size=settings.CHUNK_SIZE,
                                   chunk_overlap=settings.CHUNK_OVERLAP,
                                   chroma_persist_dir=settings.CHROMA_DB_NAME                                
                                   )
-qa_model = rag_pipeline.setup_qa_chain()
 
 
 def suggest_changes(query: str, docs: List[Document]):
@@ -54,8 +54,8 @@ def suggest_changes(query: str, docs: List[Document]):
     change_suggestions = []
 
     for doc in docs:
-        score = doc[1]
-        doc = doc[0]
+        # score = doc[1]
+        # doc = doc[0]
         # if score > settings.SCORE_THRESHOLD:
         #     continue
 
@@ -93,8 +93,9 @@ def retrieve_relevant_documents(query: str):
     Returns:
         List[DocumentUpdate]: A list of suggested changes for the most relevant documents.
     """
-    found_docs = rag_pipeline.docSearch.similarity_search_with_score(query,
-                                                                    k=settings.TOP_K_DOCS)
+    found_docs, retrieval_info = rag_pipeline.retrieve_documents(query, use_preprocessing=True)
+
+    print(f"Retrieval Info: {retrieval_info}")
 
     suggested_changes = suggest_changes(query, found_docs)
 
