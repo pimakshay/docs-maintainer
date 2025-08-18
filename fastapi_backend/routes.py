@@ -31,7 +31,7 @@ llm_manager = LLMManager(api_key=settings.API_KEY,
 
 # define rag pipeline
 if settings.RETRIEVAL_METHOD == "hybrid":
-
+    print("Hybrid RAG pipeline selected")
     rag_pipeline = HybridRAGPipeline(llm_manager=llm_manager, 
                                     doc_dir_path=settings.DOC_DIR_PATH,
                                     top_k_docs=settings.TOP_K_DOCS,
@@ -41,7 +41,7 @@ if settings.RETRIEVAL_METHOD == "hybrid":
                                     )
 
 elif settings.RETRIEVAL_METHOD == "vanilla":
-
+    print("Vanilla RAG pipeline selected")
     rag_pipeline = VanillaRAGPipeline(llm_manager=llm_manager, 
                                     doc_dir_path=settings.DOC_DIR_PATH,
                                     top_k_docs=settings.TOP_K_DOCS,

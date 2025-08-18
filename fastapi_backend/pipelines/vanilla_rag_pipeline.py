@@ -6,7 +6,7 @@ from uuid import uuid4
 from typing import List, Dict, Any, Tuple
 
 from langchain.schema import Document
-from langchain.vectorstores import Chroma
+from langchain_community.vectorstores import Chroma
 from langchain.text_splitter import CharacterTextSplitter, MarkdownTextSplitter, RecursiveCharacterTextSplitter
 from langchain.chains import RetrievalQA
 from langchain.text_splitter import Language

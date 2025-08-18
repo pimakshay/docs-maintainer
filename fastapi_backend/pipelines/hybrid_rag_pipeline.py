@@ -5,12 +5,13 @@ from uuid import uuid4
 from typing import List, Dict, Any, Tuple
 
 from langchain.schema import Document
-from langchain.vectorstores import Chroma
+from langchain_community.vectorstores import Chroma
 from langchain.text_splitter import CharacterTextSplitter, MarkdownTextSplitter, RecursiveCharacterTextSplitter
 from langchain.chains import RetrievalQA
 from langchain.text_splitter import Language
-from langchain.retrievers import EnsembleRetriever, BM25Retriever
-from langchain_community.retrievers import bm25
+from langchain_community.retrievers import BM25Retriever
+from langchain.retrievers.ensemble import EnsembleRetriever
+
 
 from fastapi_backend.helpers.document_cleaner import DocumentCleaner
 from fastapi_backend.helpers.llm_manager import LLMManager
@@ -155,6 +156,31 @@ class HybridRAGPipeline:
                 embedding_function=self.embedding_model,
                 persist_directory=persist_dir
             )
+            
+            # Load existing documents from the DB to populate filtered_docs for BM25
+            print("Loading existing documents from Chroma DB for BM25 retriever...")
+            # Get all documents from the existing collection
+            all_docs = self.chromadbDocSearch.get()
+            if all_docs and 'ids' in all_docs:
+                # Retrieve the actual document content using the IDs
+                self.filtered_docs = []
+                for doc_id in all_docs['ids']:
+                    doc = self.chromadbDocSearch.get(ids=[doc_id])
+                    if doc and 'documents' in doc and doc['documents']:
+                        # Create Document objects with the retrieved content
+                        content = doc['documents'][0]
+                        metadata = doc['metadatas'][0] if doc['metadatas'] else {}
+                        document = Document(
+                            page_content=content,
+                            metadata=metadata,
+                            id=doc_id
+                        )
+                        self.filtered_docs.append(document)
+                print(f"Loaded {len(self.filtered_docs)} existing documents from Chroma DB")
+            else:
+                print("No existing documents found in Chroma DB")
+                self.filtered_docs = []
+
         else:
             print("Creating new Chroma DB...")
             documents = self.load_documents()
