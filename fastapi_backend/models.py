@@ -1,8 +1,12 @@
 from pydantic import BaseModel, Field
 
+class QueryRequest(BaseModel):
+    query: str = Field(description="User query string")
+
 class ModelOutput(BaseModel):
     change_type:str = Field(description="Mention the change type: modified, removed, unchanged")
     suggested: str = Field(description="Suggested changes to the page content")
+    # remark: str = 
 
 class DocumentMetadata(BaseModel):
     chunk_id: str = Field(description="Unique chunk ID")

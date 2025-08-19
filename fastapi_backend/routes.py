@@ -10,7 +10,7 @@ from fastapi_backend.helpers.llm_manager import LLMManager
 from fastapi_backend.helpers.prompts import diff_suggestion_prompt
 from fastapi_backend.pipelines.vanilla_rag_pipeline import VanillaRAGPipeline
 from fastapi_backend.pipelines.hybrid_rag_pipeline import HybridRAGPipeline
-from fastapi_backend.models import ModelOutput, DocumentMetadata, DocumentUpdate
+from fastapi_backend.models import QueryRequest, ModelOutput, DocumentMetadata, DocumentUpdate
 
 
 app = FastAPI()
@@ -95,21 +95,21 @@ def suggest_changes(query: str, docs: List[Document]):
     return change_suggestions
 
 @app.post("/retrieve_relevant_documents")
-def retrieve_relevant_documents(query: str):
+def retrieve_relevant_documents(request: QueryRequest):
     """
     Retrieve relevant documents for a given query and suggest possible changes.
 
     Args:
-        query (str): The user's query string.
+        request (QueryRequest): The request containing the user's query string.
 
     Returns:
         List[DocumentUpdate]: A list of suggested changes for the most relevant documents.
     """
-    found_docs, retrieval_info = rag_pipeline.retrieve_documents(query, use_preprocessing=True)
+    found_docs, retrieval_info = rag_pipeline.retrieve_documents(request.query, use_preprocessing=True)
 
     print(f"Retrieval Info: {retrieval_info}")
 
-    suggested_changes = suggest_changes(query, found_docs)
+    suggested_changes = suggest_changes(request.query, found_docs)
 
     return suggested_changes
 
