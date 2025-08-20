@@ -19,6 +19,21 @@ Documentation Maintainer is an AI-powered system for reviewing, updating, and ma
 - **Backend**: FastAPI-based service orchestrating a Retrieval-Augmented Generation (RAG) pipeline using LangChain, ChromaDB, and Pydantic. See [Backend README](./fastapi_backend/BACKEND_README.md) for details.
 - **Data Storage**: Uses ChromaDB to store document chunks and embeddings. See [Data Storage and Retrieval](./docs/data_storage_and_retrieval.md).
 
+### Backend Architecture Diagram
+
+![Backend Architecture](docs/assets/BackendArchitecture.png)
+
+The diagram above illustrates the core components of the backend system:
+
+- **FastAPI Application**: Serves as the main entry point, handling API requests from the frontend.
+- **RAG Pipeline**: Implements Retrieval-Augmented Generation using LangChain to find and process relevant documentation chunks.
+- **ChromaDB**: Stores document embeddings and metadata, enabling efficient semantic search and retrieval.
+- **LLM Integration**: Connects to large language models (OpenAI or Google) to generate suggestions and edits based on user queries.
+- **Pydantic Models**: Used for data validation and structured responses throughout the API.
+
+This architecture enables scalable, intelligent document management and seamless integration with the modern frontend.
+
+
 ---
 
 ## Key Features
