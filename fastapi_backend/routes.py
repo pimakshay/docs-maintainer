@@ -124,6 +124,60 @@ def apply_approved_changes(docs: List[DocumentUpdate]):
     # TODO: Implement the logic to apply the changes.
     return f"Total approved documents: {len(docs)}"
 
+@app.post("/chat")
+def chat_with_documents(query: str, context_docs: List[str] = None):
+    """
+    Chat interface for asking questions about documents.
+    
+    Args:
+        query (str): User's question
+        context_docs (List[str], optional): Specific document content to use as context
+        
+    Returns:
+        dict: Response containing answer and sources
+    """
+    # If no specific context provided, retrieve relevant documents
+    if not context_docs:
+        found_docs, retrieval_info = rag_pipeline.retrieve_documents(query, use_preprocessing=True)
+        context_docs = [doc.page_content for doc in found_docs[:3]]  # Use top 3 docs
+        sources = [{"title": doc.metadata.get("title", "Unknown"), 
+                   "source_url": doc.metadata.get("source_url", "")} 
+                  for doc in found_docs[:3]]
+    else:
+        sources = []
+    
+    # Create context from documents
+    context = "\n\n".join(context_docs)
+    
+    # Create chat prompt
+    chat_prompt = f"""Based on the following documentation context, please answer the user's question clearly and accurately.
+
+Context:
+{context}
+
+User Question: {query}
+
+Please provide a helpful answer based on the documentation provided. If the answer isn't in the context, please say so."""
+    
+    # Get response from LLM
+    try:
+        response = llm_manager.llm_model.invoke([
+            {"role": "system", "content": "You are a helpful documentation assistant. Answer questions based on the provided context."},
+            {"role": "user", "content": chat_prompt}
+        ])
+        
+        return {
+            "answer": response.content,
+            "sources": sources,
+            "query": query
+        }
+    except Exception as e:
+        return {
+            "answer": f"Sorry, I encountered an error: {str(e)}",
+            "sources": [],
+            "query": query
+        }
+
 
 # add a liveness check endpoint
 @app.get("/")

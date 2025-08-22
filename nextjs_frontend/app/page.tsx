@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import DocumentCard from '../components/DocumentCard';
+import ChatInterface from '../components/ChatInterface';
 import { DocumentUpdate } from '../types';
 import { useApprovedDocuments } from '../contexts/ApprovedDocumentsContext';
 
@@ -159,6 +160,13 @@ export default function Home() {
             </div>
           </div>
         )}
+
+        {/* Chat Interface */}
+        <div className="max-w-4xl mx-auto mb-8">
+          <ChatInterface 
+            contextDocs={documents.map(doc => doc.document_metadata.original)}
+          />
+        </div>
 
         {/* Document Cards */}
         <div className="max-w-4xl mx-auto">

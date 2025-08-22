@@ -7,3 +7,19 @@ packages = ["bash"]
 
 [deployment]
 run = ["sh", "-c", "npm run dev"]
+
+[workflows]
+runButton = "Run Application"
+
+[[workflows.workflow]]
+name = "Run Application"
+author = 18459120
+mode = "parallel"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd fastapi_backend && python routes.py"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd nextjs_frontend && npm run dev"
